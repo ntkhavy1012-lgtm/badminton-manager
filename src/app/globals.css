@@ -1,26 +1,900 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: #f3f4f6;
+  color: #111827;
   font-family: Arial, Helvetica, sans-serif;
+  zoom: 0.8;
+}
+
+/* layout */
+.container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 24px;
+}
+
+.title {
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* grid */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+/* cards */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+}
+
+.grid-4 .card {
+  padding: 10px 12px;
+  min-height: 68px;
+  border-radius: 12px;
+}
+
+.card-title {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.card-number {
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+/* flex */
+.flex {
+  display: flex;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-4 {
+  gap: 14px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+.mt-4 {
+  margin-top: 14px;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+/* input */
+input,
+select {
+  height: 46px;
+  border: 1px solid #d1d5db;
+  border-radius: 11px;
+  padding: 0 14px;
+  font-size: 14px;
+  background: white;
+}
+
+input {
+  min-width: 0;
+}
+
+select {
+  min-width: 130px;
+}
+
+/* buttons */
+button {
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: 0.15s;
+  white-space: nowrap;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.black-btn,
+.btn-black {
+  background: #000;
+  color: #fff;
+  height: 46px;
+  padding: 0 24px;
+}
+
+.green-btn,
+.btn-green {
+  background: #16a34a;
+  color: #fff;
+  padding: 9px 15px;
+}
+
+.gray-btn,
+.btn-gray {
+  background: #d1d5db;
+  color: #111827;
+  padding: 9px 15px;
+}
+
+.red-btn,
+.btn-red {
+  background: #ef4444;
+  color: #fff;
+  padding: 9px 15px;
+}
+
+.match-btn {
+  background: #e5e7eb;
+  color: #111827;
+  padding: 9px 15px;
+}
+
+/* member cards */
+.member-card {
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.member-name {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.level {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+.off-text {
+  color: red;
+  font-size: 13px;
+}
+
+.present-text {
+  color: #16a34a;
+  font-size: 13px;
+}
+
+.member-card .flex {
+  flex-wrap: wrap;
+}
+
+/* progress chart */
+.bar-bg {
+  width: 100%;
+  height: 22px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #86efac;
+  border-radius: 999px;
+  min-width: 0;
+}
+
+.progress-wrap {
+  width: 100%;
+  height: 22px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #86efac;
+  border-radius: 999px;
+}
+
+/* timeline */
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+thead {
+  background: #f9fafb;
+}
+
+tr:hover {
+  background: #f9fafb;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .container {
+    padding: 20px 14px;
+  }
+
+  .grid-4,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .section-title {
+    font-size: 22px;
+  }
+
+  .flex {
+    flex-wrap: wrap;
+  }
+
+  input {
+    width: 100%;
+  }
+}
+/* ===== OLD UI LOOK FIX ===== */
+
+.container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 24px;
+}
+
+.title {
+  font-size: 38px;
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.grid-4 .card {
+  min-height: 104px;
+  padding: 22px;
+}
+
+.card-title {
+  font-size: 14px;
+}
+
+.card-number {
+  font-size: 30px;
+}
+
+.card {
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.section-title {
+  font-size: 24px;
+}
+
+/* Attendance + chart ngang */
+.grid-2 {
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+/* Member card nhỏ giống bản cũ */
+.card:first-child .member-card,
+.member-card {
+  padding: 14px;
+  min-height: 150px;
+}
+
+/* Ép attendance list thành 2 cột */
+.card .member-card {
+  width: calc(50% - 8px);
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 12px;
+  margin-bottom: 14px;
+}
+
+.member-card:nth-child(odd) {
+  margin-right: 0;
+}
+
+.member-name {
+  font-size: 16px;
+}
+
+.level {
+  font-size: 13px;
+}
+
+.member-card .flex {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+}
+
+.member-card .mt-4,
+.member-card .mt-2 {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.green-btn,
+.gray-btn,
+.red-btn,
+.match-btn {
+  padding: 9px 14px;
+  font-size: 14px;
+  border-radius: 9px;
+}
+
+/* chart bar giống cũ */
+.bar-bg {
+  height: 28px;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.bar-fill {
+  min-width: 34px;
+  background: #bbf7d0;
+}
+
+/* Timeline gọn hơn */
+table {
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 7px 10px;
+}
+.member-card:has(.present-text) .match-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.member-card:has(.present-text) .red-btn:first-of-type {
+  background: #f97316;
+  color: white;
+}
+.orange-btn {
+  background: #f97316;
+  color: white;
+  padding: 9px 15px;
+  border-radius: 10px;
+}
+.orange-btn {
+  background: #f97316;
+  color: white;
+  padding: 9px 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+/* Attendance chạy ngang */
+.attendance-scroll {
+  display: grid;
+  grid-template-columns: repeat(6, 220px);
+  gap: 14px;
+
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+.attendance-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  padding: 10px 18px;
+
+  border-radius: 14px;
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.member-left {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+
+  flex: 1;
+}
+
+.member-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.attendance-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-x: hidden;
+}
+
+.attendance-scroll .member-card {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 54px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  padding: 8px 12px !important;
+  margin: 0 !important;
+}
+
+.member-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.member-name {
+  width: 150px;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.level {
+  width: 90px;
+  font-size: 12px;
+}
+
+.member-status {
+  width: 55px;
+  font-size: 12px;
+}
+
+.member-matches {
+  width: 55px;
+  font-size: 12px;
+}
+
+.member-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
+}
+
+.member-actions button {
+  padding: 7px 10px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+}
+
+.blue-btn {
+  background: #2563eb !important;
+  color: white !important;
+}
+.attendance-group-title{
+  font-size: 18px;
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  margin-top: 10px;
+
+  background: #f3f4f6;
+  color: #111827;
+
+  border-left: 6px solid #2563eb;
+}
+
+/* màu biểu đồ */
+
+.bar-fill.low {
+  background: #ef4444;
+}
+
+.bar-fill.mid {
+  background: #f59e0b;
+}
+
+.bar-fill.high {
+  background: #22c55e;
+}
+/* mini stats top */
+.grid-4 .card {
+  padding: 8px 10px !important;
+  min-height: 62px !important;
+  border-radius: 10px;
+}
+
+.grid-4 .card-title {
+  font-size: 14px !important;
+  margin-bottom: 4px !important;
+}
+
+.grid-4 .card-number {
+  font-size: 18px !important;
+  line-height: 1;
+}
+
+.grid-4 {
+  gap: 8px !important;
+}
+.grid-4 {
+  max-width: 600px;
+}
+/* form thêm thành viên gọn hơn */
+.flex.gap-4 {
+  align-items: center;
+}
+
+.flex-1 {
+  height: 40px !important;
+  font-size: 16px;
+}
+
+select {
+  height: 40px !important;
+  min-width: 120px;
+  font-size: 16px;
+  padding: 0 14px;
+}
+
+.black-btn {
+  height: 40px !important;
+  padding: 0 28px !important;
+  font-size: 16px;
+}
+/* card thêm thành viên gọn hơn */
+.card.mb-4 {
+  padding: 14px 18px !important;
+}
+
+.card.mb-4 .section-title {
+  margin-bottom: 10px !important;
+  font-size: 22px;
+}
+.card.mb-4 {
+  width: 70%;
+  margin-right: auto;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.reset-btn {
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  background: #374151;
+}
+.reset-icon {
+  font-size: 20px;
+  line-height: 0;
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+.current-match-box {
+  background: #f3f4f6;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.selected-player {
+  font-weight: 700;
+  padding: 6px 0;
+}
+
+.empty-text {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.full-btn {
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.match-order-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: white;
+}
+
+.match-order-title {
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.main-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.7fr 0.7fr;
+  gap: 18px;
+  align-items: start;
+
+}
+
+.match-compose-card {
+  margin-bottom: 18px;
+}
+
+.selected-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.selected-pill {
+  background: #f3f4f6;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.upcoming-card {
+  align-self: start;
+}
+
+@media (max-width: 1100px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+
+}
+.main-grid .card:nth-child(2) {
+  min-width: 360px;
+}
+
+.main-grid .card:nth-child(2) .section-title {
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.main-grid .card:nth-child(2) .flex {
+  font-size: 17px;
+}
+
+.bar-bg {
+  height: 28px;
+  border-radius: 999px;
+}
+
+.bar-fill {
+  height: 28px;
+  border-radius: 999px;
+}
+/* upcoming to hơn */
+.upcoming-card {
+  min-width: 360px;
+  align-self: start;
+}
+
+/* title upcoming */
+.upcoming-card .section-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+/* card từng trận */
+.match-order-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: white;
+}
+
+/* title match */
+.match-order-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+/* tên player */
+.match-order-card div {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* kéo upcoming ngang hàng */
+.main-grid > .upcoming-card {
+  margin-top: 0 !important;
+}
+
+/* biểu đồ đẹp hơn */
+.main-grid > .card:nth-child(2) {
+  min-width: 420px;
+}
+.page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+}
+
+.right-panel {
+  width: 360px;
+  position: static;
+  justify-self: start;
+}
+
+.main-grid {
+  grid-template-columns: 1.35fr 0.9fr;
+}
+.page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+.left-panel {
+  min-width: 0;
+  max-width: 900px;
+}
+
+.member-active {
+  background: linear-gradient(
+    to right,
+    #86efac 0%,
+    #dcfce7 35%,
+    white 100%
+  );
+}
+.yellow-btn {
+  background: #facc15;
+  color: #111827;
+  border: none;
+}
+
+.yellow-btn:hover {
+  background: #eab308;
+}
+.yellow-soft-btn {
+  background: #fef9c3;
+  color: #854d0e;
+  border: none;
+}
+
+.yellow-btn {
+  background: #facc15;
+  color: #111827;
+  border: none;
+}
+.match-compose-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.match-type-select {
+  height: 40px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.match-order-yellow {
+  background: #fef3c7;
+}
+
+.match-order-purple {
+  background: #ede9fe;
+}
+
+.match-type-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: white;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
