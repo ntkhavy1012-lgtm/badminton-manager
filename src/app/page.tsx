@@ -10,6 +10,8 @@ type Member = {
   level: string;
   present: boolean;
   total_matches: number;
+  present_at: string | null;
+  gender: string;
 };
 type UpcomingMatch = {
   id: string;
@@ -17,15 +19,21 @@ type UpcomingMatch = {
   status: string;
   created_at: string;
   match_type: string;
+ 
 };
+
 
 export default function Page() {
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState("");
   const [level, setLevel] = useState("Basic");
   const [selectedPlayers, setSelectedPlayers] = useState<Member[]>([]);
-const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
 const [matchType, setMatchType] = useState("Trận xếp");
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editLevel, setEditLevel] = useState("Basic");
+  const [editGender, setEditGender] = useState("Nam");
 
   const fetchMembers = async () => {
     const { data } = await supabase
@@ -45,11 +53,14 @@ const [matchType, setMatchType] = useState("Trận xếp");
     if (!name) return;
 
     await supabase.from("members").insert({
-      name,
-      level,
-      present: false,
-      total_matches: 0,
-    });
+  name,
+  level,
+  gender,
+  present: false,
+  total_matches: 0,
+});
+
+    
 
     setName("");
     fetchMembers();
@@ -58,7 +69,10 @@ const [matchType, setMatchType] = useState("Trận xếp");
  const setPresent = async (id: string, value: boolean) => {
   const { error } = await supabase
     .from("members")
-    .update({ present: value })
+    .update({
+  present: value,
+  present_at: value ? new Date().toISOString() : null,
+})
     .eq("id", id);
 
  if (error) {
@@ -68,7 +82,7 @@ const [matchType, setMatchType] = useState("Trận xếp");
 }
 
   fetchMembers();
-};
+  };
 
 const addMatch = async (id: string) => {
   const member = members.find((m) => m.id === id);
@@ -95,7 +109,7 @@ const addMatch = async (id: string) => {
   });
 
   fetchMembers();
-};
+  };
 
 const removeMatch = async (id: string) => {
   const member = members.find((m) => m.id === id);
@@ -121,12 +135,41 @@ const removeMatch = async (id: string) => {
   });
 
   fetchMembers();
+  };
+
+  const deleteMember = async (id: string, name: string) => {
+  const ok = window.confirm(`Bạn có chắc muốn xoá thành viên "${name}" không?`);
+
+  if (!ok) return;
+
+  await supabase.from("members").delete().eq("id", id);
+  fetchMembers();
+  };
+
+  const openEditMember = (member: Member) => {
+    setEditingMember(member);
+    setEditName(member.name);
+    setEditLevel(member.level);
+  setEditGender(member.gender || "Nam");
+  };
+
+const saveEditMember = async () => {
+    if (!editingMember) return;
+
+  await supabase
+    .from("members")
+    .update({
+      name: editName,
+      level: editLevel,
+      gender: editGender,
+    })
+    .eq("id", editingMember.id);
+
+    setEditingMember(null);
+  fetchMembers();
 };
 
-  const deleteMember = async (id: string) => {
-    await supabase.from("members").delete().eq("id", id);
-    fetchMembers();
-  };
+  const [gender, setGender] = useState("Nam");
 
   const totalMembers = members.length;
   const presentToday = members.filter((m) => m.present).length;
@@ -225,61 +268,128 @@ const createUpcomingMatch = async () => {
 
   fetchMembers();
   fetchUpcomingMatches();
-};
 
+};
 const deleteUpcomingMatch = async (id: string) => {
   await supabase.from("upcoming_matches").delete().eq("id", id);
   fetchUpcomingMatches();
 };
+
+const formatPresentTime = (time: string | null) => {
+  if (!time) return "";
+
+  return new Date(time).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).toLowerCase().replace(":00", "");
+};
+
+const [searchPlayer, setSearchPlayer] = useState("");
+const normalizeText = (text: string) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+const playerSuggestions = members
+  .filter((member) => member.present)
+  .filter(
+    (member) =>
+      normalizeText(member.name).includes(normalizeText(searchPlayer))
+  )
+  .filter(
+    (member) =>
+      !selectedPlayers.some((p) => p.id === member.id)
+  )
+  .sort((a, b) => {
+    const keyword = normalizeText(searchPlayer);
+
+    const aWords = normalizeText(a.name).split(" ");
+    const bWords = normalizeText(b.name).split(" ");
+
+    const aLast = aWords[aWords.length - 1];
+    const bLast = bWords[bWords.length - 1];
+
+    const aExactLast = aLast === keyword;
+    const bExactLast = bLast === keyword;
+
+    // ưu tiên tên cuối khớp chính xác
+    if (aExactLast !== bExactLast) {
+      return Number(bExactLast) - Number(aExactLast);
+    }
+
+    return a.name.localeCompare(b.name);
+  })
+  .slice(0, 6);
+
   return (
-  <div className="container">
+    <div className="container">
     <div className="title">🏸 Badminton Manager</div>
 
     <div className="subtitle">
       Điểm danh, cộng trận và theo dõi lượt đánh realtime
     </div>
 
-    <div className="page-layout">
-      <div className="left-panel">
-        <div className="grid-4">
-          <div className="card">
-            <div className="card-title">Tổng thành viên</div>
+      <div className="page-layout">
+        <div className="left-panel">
+          <div className="grid-4">
+            <div className="card">
+              <div className="card-title">Tổng thành viên</div>
             <div className="card-number">{totalMembers}</div>
-          </div>
+            </div>
 
-          <div className="card">
-            <div className="card-title">Có mặt hôm nay</div>
+            <div className="card">
+              <div className="card-title">Có mặt hôm nay</div>
             <div className="card-number">{presentToday}</div>
-          </div>
+            </div>
 
-          <div className="card">
-            <div className="card-title">Off hôm nay</div>
+            <div className="card">
+              <div className="card-title">Off hôm nay</div>
             <div className="card-number">{offToday}</div>
-          </div>
+            </div>
 
-          <div className="card">
-            <div className="card-title">Tổng trận hôm nay</div>
+            <div className="card">
+              <div className="card-title">Tổng trận hôm nay</div>
             <div className="card-number">{totalMatches}</div>
+            </div>
           </div>
-        </div>
 
-        <div className="card mb-4">
-          <div className="section-title">Thêm thành viên</div>
+          <div className="card mb-4">
+            <div className="section-title">Thêm thành viên</div>
 
-          <div className="flex gap-4">
-            <input
+            <div className="flex gap-4">
+              <input
               className="flex-1"
-              placeholder="Nhập tên thành viên"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+                placeholder="Nhập tên thành viên"
+                value={name}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setName(e.target.value)
+              }
+              />
 
-            <select value={level} onChange={(e) => setLevel(e.target.value)}>
-              <option>Basic</option>
-              <option>Beginner</option>
-              <option>Intermediate</option>
-              <option>Advanced</option>
-            </select>
+            <select
+              value={level}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setLevel(e.target.value)
+              }
+            >
+                <option>Basic</option>
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </select>
+
+            <select
+    value={gender}
+    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+      setGender(e.target.value)
+    }
+  >
+                <option>Nam</option>
+                <option>Nữ</option>
+              </select>
 
             <button className="black-btn" onClick={addMember}>
               Thêm
@@ -295,7 +405,9 @@ const deleteUpcomingMatch = async (id: string) => {
               <select
                 className="match-type-select"
                 value={matchType}
-                onChange={(e) => setMatchType(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setMatchType(e.target.value)
+                }
               >
                 <option>Trận xếp</option>
                 <option>Trận order</option>
@@ -305,6 +417,40 @@ const deleteUpcomingMatch = async (id: string) => {
                 Ghép trận
               </button>
             </div>
+          </div>
+
+          <div className="match-search-box">
+            <input
+              className="match-search-input"
+              placeholder="Gõ tên người chơi..."
+              value={searchPlayer}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchPlayer(e.target.value)
+              }
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Enter" && playerSuggestions[0]) {
+                  toggleSelectPlayer(playerSuggestions[0]);
+                  setSearchPlayer("");
+                }
+              }}
+            />
+
+            {searchPlayer && (
+              <div className="match-suggestions">
+                {playerSuggestions.map((member) => (
+                  <div
+                    key={member.id}
+                    className="match-suggestion-item"
+                    onClick={() => {
+                      toggleSelectPlayer(member);
+                      setSearchPlayer("");
+                    }}
+                  >
+                    {member.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="selected-row">
@@ -331,40 +477,45 @@ const deleteUpcomingMatch = async (id: string) => {
               </button>
             </div>
 
-            <div className="attendance-scroll">
+          <div className="attendance-scroll">
               {["Intermediate", "Basic", "Advanced"].map((group) => (
                 <div key={group} className="attendance-group">
                   <div className="attendance-group-title">{group}</div>
 
                   {[...members]
                     .filter((member) => member.level === group)
-                    .sort((a, b) => {
-                      if (a.present !== b.present) {
-                        return Number(b.present) - Number(a.present);
-                      }
+                .sort((a, b) => {
+                      const pa = Number(a.present);
+                      const pb = Number(b.present);
+
+                      if (pa !== pb) return pb - pa;
 
                       return a.total_matches - b.total_matches;
                     })
                     .map((member) => (
-                      <div
-                        key={member.id}
-                        className={`member-card ${
-                          member.present ? "member-active" : ""
-                        }`}
-                      >
-                        <div className="member-left">
+                    <div
+                      key={member.id}
+                      className={`member-card ${
+                        member.present
+                          ? member.gender === "Nam"
+                            ? "member-active-male"
+                            : "member-active-female"
+                          : ""
+                      }`}
+                    >
+                      <div className="member-left">
                           <div className="member-name">{member.name}</div>
                           <div className="level">{member.level}</div>
                           <div className="member-status">
                             {member.present ? "Present" : "Off"}
-                          </div>
-                          <div className="member-matches">
+                      </div>
+                      <div className="member-matches">
                             {member.total_matches} trận
                           </div>
-                        </div>
+                      </div>
 
-                        <div className="member-actions">
-                          <button
+                      <div className="member-actions">
+                        <button
                             className={
                               selectedPlayers.some((p) => p.id === member.id)
                                 ? "yellow-btn"
@@ -372,17 +523,20 @@ const deleteUpcomingMatch = async (id: string) => {
                                 ? "yellow-soft-btn"
                                 : "match-btn"
                             }
-                            onClick={() => toggleSelectPlayer(member)}
-                          >
-                            Chọn
-                          </button>
+                          onClick={() => toggleSelectPlayer(member)}
+                        >
+                          Chọn
+                        </button>
 
-                          <button
-                            className="green-btn"
-                            onClick={() => setPresent(member.id, true)}
-                          >
-                            Có mặt
-                          </button>
+                        <button
+                            className={`green-btn ${
+                              member.present ? "disabled-btn" : ""
+                            }`}
+                          disabled={member.present}
+                          onClick={() => setPresent(member.id, true)}
+                        >
+                          Có mặt
+                        </button>
 
                           <button
                             className="gray-btn"
@@ -391,12 +545,12 @@ const deleteUpcomingMatch = async (id: string) => {
                             Off
                           </button>
 
-                          <button
-                            className={member.present ? "blue-btn" : "match-btn"}
-                            onClick={() => addMatch(member.id)}
-                          >
-                            +1 trận
-                          </button>
+                        <button
+                          className={member.present ? "blue-btn" : "match-btn"}
+                          onClick={() => addMatch(member.id)}
+                        >
+                          +1 trận
+                        </button>
 
                           <button
                             className={
@@ -404,15 +558,27 @@ const deleteUpcomingMatch = async (id: string) => {
                             }
                             onClick={() => removeMatch(member.id)}
                           >
-                            -1 trận
-                          </button>
+                          -1 trận
+                        </button>
 
-                          <button
-                            className="red-btn"
-                            onClick={() => deleteMember(member.id)}
-                          >
-                            Xóa
-                          </button>
+                          <div className="member-action-row">
+
+  <button
+    className="red-btn"
+    onClick={() => deleteMember(member.id, member.name)}
+  >
+                          Xóa
+                        </button>
+
+  <button
+  className="edit-btn"
+  onClick={() => openEditMember(member)}
+>
+  ✏️
+</button>
+
+</div>
+
                         </div>
                       </div>
                     ))}
@@ -424,10 +590,13 @@ const deleteUpcomingMatch = async (id: string) => {
           <div className="card">
             <div className="section-title">Biểu đồ lượt đấu</div>
 
-            {[...members]
-              .filter((member) => member.present)
-              .sort((a, b) => a.total_matches - b.total_matches)
-              .map((member, index) => (
+            {members
+  .filter((member) => member.present)
+  .sort((a, b) => {
+    if (a.present !== b.present) return Number(b.present) - Number(a.present);
+    return a.total_matches - b.total_matches; // nhiều trận lên trên
+  })
+  .map((member, index) => (
                 <div key={member.id} className="mb-4">
                   <div
                     className="flex"
@@ -435,6 +604,8 @@ const deleteUpcomingMatch = async (id: string) => {
                   >
                     <div>
                       #{index + 1} {member.name}
+                      {member.present_at &&
+                        ` (${formatPresentTime(member.present_at)})`}
                     </div>
 
                     <div>
@@ -445,9 +616,9 @@ const deleteUpcomingMatch = async (id: string) => {
                   <div className="bar-bg mt-2">
                     <div
                       className={`bar-fill ${
-                        member.total_matches <= 2
+                        member.total_matches <= 5
                           ? "low"
-                          : member.total_matches <= 5
+                          : member.total_matches <= 10
                           ? "mid"
                           : "high"
                       }`}
@@ -459,48 +630,101 @@ const deleteUpcomingMatch = async (id: string) => {
                 </div>
               ))}
           </div>
-        </div>
+          </div>
 
-        <div className="card mt-4">
-          <div className="section-title">Timeline hoạt động</div>
-          <Timeline />
-        </div>
+          <div className="card mt-4">
+            <div className="section-title">Timeline hoạt động</div>
+            <Timeline />
+          </div>
       </div>
 
       <div className="right-panel">
         <div className="card upcoming-card">
-          <div className="section-title">Upcoming Match</div>
+            <div className="section-title">Upcoming Match</div>
 
-          {upcomingMatches.map((match, index) => (
-            <div
-              key={match.id}
-              className={`match-order-card ${
-                match.match_type === "Trận order"
-                  ? "match-order-purple"
-                  : "match-order-yellow"
-              }`}
-            >
-              <div className="match-order-title">Match #{index + 1}</div>
+            {upcomingMatches.map((match, index) => (
+  <div
+    key={match.id}
+    className={`match-order-card ${
+      match.match_type === "Trận order"
+        ? "match-order-purple"
+        : "match-order-yellow"
+    }`}
+  >
+    <div className="match-order-title">
+      Match #{index + 1}
+    </div>
 
-              <div className="match-type-tag">{match.match_type}</div>
+    <div className="match-type-tag">
+      {match.match_type}
+    </div>
 
-              {match.players.map((player, i) => (
-                <div key={player.id}>
-                  {i + 1}. {player.name}
-                </div>
-              ))}
+                {match.players.map((player, i) => (
+      <div key={player.id}>
+        {i + 1}. {player.name}
+      </div>
+                ))}
 
-              <button
-                className="red-btn mt-2"
-                onClick={() => deleteUpcomingMatch(match.id)}
-              >
-                Xóa trận
-              </button>
-            </div>
-          ))}
+    <button
+      className="red-btn mt-2"
+      onClick={() => deleteUpcomingMatch(match.id)}
+    >
+      Xóa trận
+    </button>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
+      {editingMember && (
+  <div className="modal-overlay">
+    <div className="edit-modal">
+      <div className="modal-title">Chỉnh sửa thành viên</div>
+
+      <label>Tên thành viên</label>
+      <input
+        value={editName}
+        onChange={(e) => setEditName(e.target.value)}
+      />
+
+      <label>Trình độ</label>
+      <select
+        value={editLevel}
+        onChange={(e) => setEditLevel(e.target.value)}
+      >
+        <option>Basic</option>
+        <option>Beginner</option>
+        <option>Intermediate</option>
+        <option>Advanced</option>
+      </select>
+
+      <label>Giới tính</label>
+      <select
+        value={editGender}
+        onChange={(e) => setEditGender(e.target.value)}
+      >
+        <option>Nam</option>
+        <option>Nữ</option>
+      </select>
+
+      <div className="modal-actions">
+        <button
+          className="gray-btn"
+          onClick={() => setEditingMember(null)}
+        >
+          Hủy
+        </button>
+
+        <button
+          className="black-btn"
+          onClick={saveEditMember}
+        >
+          Lưu thay đổi
+        </button>
       </div>
     </div>
   </div>
-);
+)}
+    </div>
+  );
 }
